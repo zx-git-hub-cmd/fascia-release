@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4A6CF7">
+  <title>筋膜松解打卡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4A6CF7;
+      --primary-dark: #3A56D4;
+      --accent: #764ba2;
+      --success: #43e97b;
+      --success-dark: #38f9d7;
+      --bg: #F0F2FF;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --border: #e8ecff;
+      --radius: 16px;
+      --radius-lg: 24px;
+      --shadow: 0 4px 20px rgba(74, 108, 247, 0.08);
+      --shadow-lg: 0 8px 32px rgba(74, 108, 247, 0.15);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    html, body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      padding-bottom: 20px;
+    }
+
+    /* ===== 页面切换 ===== */
+    .page { display: none; animation: pageIn 0.35s ease; }
+    .page.active { display: block; }
+    
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== 顶部导航 ===== */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(240, 242, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid rgba(74, 108, 247, 0.06);
+    }
+
+    .top-bar h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ===== 底部 Tab（内嵌式，兼容文件App预览） ===== */
+    .tab-bar {
+      position: relative;
+      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      margin: 16px;
+      border-radius: 16px;
+      padding: 6px 0 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 0 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .tab-item svg { width: 24px; height: 24px; margin-bottom: 2px; transition: all 0.2s; }
+    .tab-item span { font-size: 10px; color: var(--text-muted); font-weight: 500; transition: all 0.2s; }
+    .tab-item.active svg { transform: scale(1.1); }
+    .tab-item.active span { color: var(--primary); font-weight: 600; }
+    .tab-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 0 0 3px 3px;
+    }
+
+    /* ===== 首页 ===== */
+    .hero-banner {
+      margin: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 8s ease infinite;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 150px;
+      height: 150px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+    .hero-greeting { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .hero-subtitle { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 20px; }
+
+    .hero-stats {
+      display: flex;
+      background: rgba(255,255,255,0.15);
+      border-radius: 14px;
+      padding: 14px 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-stat { flex: 1; text-align: center; }
+    .hero-stat-num { font-size: 28px; font-weight: 900; color: #fff; line-height: 1.2; }
+    .hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+    .hero-stat + .hero-stat { border-left: 1px solid rgba(255,255,255,0.2); }
+
+    /* 进度条 */
+    .progress-section { margin: 20px 16px 0; }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .progress-title { font-size: 15px; font-weight: 600; }
+    .progress-count { font-size: 13px; color: var(--primary); font-weight: 600; }
+    .progress-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-msg { font-size: 13px; color: var(--primary); margin-top: 8px; text-align: center; font-weight: 500; }
+
+    /* 分类标签 */
+    .category-bar { display: flex; gap: 8px; padding: 16px 16px 8px; overflow-x: auto; justify-content: center; }
+    .category-bar::-webkit-scrollbar { display: none; }
+    .cat-tag {
+      flex-shrink: 0;
+      padding: 7px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.25s;
+      font-weight: 500;
+    }
+    .cat-tag.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+    }
+
+    /* 运动卡片 */
+    .exercise-list { padding: 8px 16px; }
+    .exercise-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .exercise-card:active { transform: scale(0.97); box-shadow: var(--shadow-lg); }
+    .exercise-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .card-body { display: flex; align-items: center; padding: 16px; }
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .card-desc { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+    .card-tags { display: flex; gap: 6px; }
+    .card-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .card-action { margin-left: 12px; flex-shrink: 0; }
+    .start-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .start-btn:active { transform: scale(0.9); }
+    .start-btn.done {
+      background: #E8F5E9 !important;
+      box-shadow: none;
+      font-size: 20px;
+      color: #4CAF50;
+    }
+
+    /* ===== 计时页 ===== */
+    .timer-page {
+      min-height: 100vh;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timer-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 16px 20px 8px;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+    .timer-back svg { width: 18px; height: 18px; }
+
+    .timer-hero {
+      text-align: center;
+      padding: 20px 20px 0;
+    }
+    .timer-icon { font-size: 56px; margin-bottom: 8px; }
+    .timer-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .timer-tips {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: var(--card);
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* ===== 动作演示动画 ===== */
+    .demo-container {
+      margin: 0 20px;
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .demo-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .demo-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .demo-title svg { width: 16px; height: 16px; }
+    .demo-svg-wrap {
+      width: 200px;
+      height: 140px;
+      position: relative;
+    }
+    .demo-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    /* 火柴人样式 */
+    .stick-head { fill: none; stroke-width: 3; stroke-linecap: round; }
+    .stick-body { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .stick-limb { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .stick-tool { stroke-width: 2; stroke-linecap: round; }
+    .stick-ground { stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0.3; }
+    /* 动画 */
+    .anim-roll { animation: rollBody 3s ease-in-out infinite; }
+    .anim-roll-reverse { animation: rollBody 3s ease-in-out infinite reverse; }
+    @keyframes rollBody {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(18px); }
+    }
+    .anim-foot-roll { animation: footRoll 2.5s ease-in-out infinite; }
+    @keyframes footRoll {
+      0%, 100% { transform: rotate(-8deg); }
+      50% { transform: rotate(8deg); }
+    }
+    .anim-squat { animation: squatMove 3s ease-in-out infinite; }
+    @keyframes squatMove {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+    .anim-arm-press { animation: armPress 2.5s ease-in-out infinite; }
+    @keyframes armPress {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-4px) rotate(-5deg); }
+    }
+    .anim-lean { animation: leanMove 3s ease-in-out infinite; }
+    @keyframes leanMove {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(6deg); }
+    }
+    .anim-breathe { animation: breathe 3s ease-in-out infinite; }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .anim-extend { animation: thoracicExtend 3s ease-in-out infinite; }
+    @keyframes thoracicExtend {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      50% { transform: rotate(-8deg) translateY(-6px); }
+    }
+
+    /* 圆环计时器 */
+    .circle-timer {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      margin: 36px auto;
+    }
+
+    .circle-timer svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .circle-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+    .circle-progress {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .circle-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .timer-status { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+    /* 控制按钮 */
+    .timer-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    .ctrl-btn {
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    .ctrl-btn:active { transform: scale(0.93); }
+
+    .ctrl-btn.primary {
+      width: 160px;
+      height: 52px;
+      color: #fff;
+      font-size: 17px;
+      box-shadow: 0 6px 20px rgba(74, 108, 247, 0.35);
+    }
+
+    .ctrl-btn.secondary {
+      width: 100px;
+      height: 42px;
+      background: var(--card);
+      color: var(--text-secondary);
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* ===== 完成页 ===== */
+    .complete-page {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px 40px;
+      animation: completeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes completeIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .confetti-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      animation: confettiFall 3s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .complete-icon { font-size: 80px; margin-bottom: 16px; animation: bounceIn 0.8s ease 0.2s both; }
+    @keyframes bounceIn {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .complete-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .complete-exercise { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+
+    .praise-card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 340px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .praise-text { font-size: 15px; color: var(--text-secondary); line-height: 1.8; }
+
+    .complete-stats { display: flex; gap: 40px; margin-bottom: 36px; }
+    .cs-item { text-align: center; }
+    .cs-num { font-size: 24px; font-weight: 800; }
+    .cs-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .complete-actions { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 12px; }
+    .action-btn {
+      height: 50px;
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    .action-btn:active { transform: scale(0.97); }
+    .action-btn.primary { color: #fff; box-shadow: 0 6px 20px rgba(74, 108, 247, 0.3); }
+    .action-btn.outline { color: var(--primary); background: var(--card); border: 2px solid var(--primary); }
+
+    /* ===== 记录页 ===== */
+    .records-banner {
+      margin: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .records-banner::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -15%;
+      width: 160px;
+      height: 160px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    .records-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 16px; position: relative; z-index: 1; }
+    .records-grid { display: flex; gap: 10px; position: relative; z-index: 1; }
+    .records-stat {
+      flex: 1;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 12px 0;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .rs-num { font-size: 24px; font-weight: 800; color: #fff; }
+    .rs-label { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 40px;
+    }
+    .empty-icon { font-size: 72px; margin-bottom: 16px; }
+    .empty-text { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+    .empty-btn {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      padding: 12px 40px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(74, 108, 247, 0.3);
+      font-family: inherit;
+    }
+
+    .date-group { padding: 0 16px; margin-bottom: 16px; }
+    .date-header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; margin-bottom: 10px; }
+    .date-text { font-size: 14px; font-weight: 600; }
+    .date-count { font-size: 12px; color: var(--text-muted); }
+
+    .record-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      transition: transform 0.2s;
+    }
+    .record-card:active { transform: scale(0.98); }
+    .record-left { display: flex; align-items: center; flex: 1; }
+    .record-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-right: 12px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .record-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .record-meta { font-size: 11px; color: var(--text-muted); }
+
+    .like-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    .like-btn.liked { background: #FFF0F0; }
+    .like-icon { font-size: 22px; margin-bottom: 2px; transition: transform 0.2s; }
+    .like-btn:active .like-icon { transform: scale(1.3); }
+    .like-text { font-size: 10px; color: var(--text-muted); }
+    .like-btn.liked .like-text { color: #FF4757; font-weight: 600; }
+
+    /* ===== 装饰元素 ===== */
+    .deco-circle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (min-width: 480px) {
+      .exercise-list, .date-group { max-width: 440px; margin-left: auto; margin-right: auto; }
+      .hero-banner, .records-banner, .progress-section { max-width: 440px; margin-left: auto; margin-right: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== 首页 ===== -->
+  <div class="page active" id="page-home">
+    <div class="top-bar">
+      <h1>🏋️ 筋膜松解打卡</h1>
+    </div>
+
+    <div class="hero-banner">
+      <div class="hero-content">
+        <div class="hero-greeting" id="greeting">早上好 ☀️</div>
+        <div class="hero-subtitle">今天也要好好放松身体哦 💆</div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-num" id="streakDays">0</div>
+            <div class="hero-stat-label">连续打卡</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num" id="todayCount">0</div>
+            <div class="hero-stat-label">今日完成</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-num" id="totalCount">0</div>
+            <div class="hero-stat-label">累计打卡</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-title">📋 今日进度</span>
+        <span class="progress-count" id="progressText">0/8</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="progress-msg" id="progressMsg"></div>
+    </div>
+
+    <div class="category-bar" id="categoryBar"></div>
+    <div class="exercise-list" id="exerciseList"></div>
+
+    <!-- 底部导航 -->
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-item active" onclick="switchTab('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>运动</span>
+      </div>
+      <div class="tab-item" onclick="switchTab('records')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>打卡</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 计时页 ===== -->
+  <div class="page" id="page-timer">
+    <div class="timer-page">
+      <button class="timer-back" onclick="goHome()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        返回
+      </button>
+      <div class="timer-hero">
+        <div class="timer-icon" id="timerIcon">🦶</div>
+        <div class="timer-name" id="timerName">足底筋膜松解</div>
+        <div class="timer-tips" id="timerTips">💡 用网球踩在足底滚动</div>
+      </div>
+
+      <!-- 动作演示动画 -->
+      <div class="demo-container" id="demoContainer">
+        <div class="demo-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          动作演示
+        </div>
+        <div class="demo-svg-wrap" id="demoSvgWrap"></div>
+      </div>
+
+      <div class="circle-timer">
+        <svg viewBox="0 0 200 200">
+          <circle class="circle-bg" cx="100" cy="100" r="88"/>
+          <circle class="circle-progress" id="circleProgress" cx="100" cy="100" r="88"
+            stroke-dasharray="553" stroke-dashoffset="553"/>
+        </svg>
+        <div class="circle-center">
+          <div class="timer-display" id="timerDisplay">02:00</div>
+          <div class="timer-status" id="timerStatus">准备开始</div>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="ctrl-btn secondary" onclick="resetTimer()">重置</button>
+        <button class="ctrl-btn primary" id="mainBtn" onclick="toggleTimer()">开始</button>
+        <button class="ctrl-btn secondary" onclick="skipTimer()">跳过</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 完成页 ===== -->
+  <div class="page" id="page-complete">
+    <div class="complete-page">
+      <div class="confetti-container" id="confettiContainer"></div>
+      <div class="complete-icon">✅</div>
+      <div class="complete-title">完成啦！</div>
+      <div class="complete-exercise" id="completeExercise">足底筋膜松解</div>
+      <div class="praise-card">
+        <div class="praise-text" id="praiseText">太棒了！🎉 你又完成了一次筋膜松解！</div>
+      </div>
+      <div class="complete-stats">
+        <div class="cs-item">
+          <div class="cs-num" id="csDuration">120秒</div>
+          <div class="cs-label">运动时长</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-num" id="csTime">08:30</div>
+          <div class="cs-label">完成时间</div>
+        </div>
+      </div>
+      <div class="complete-actions">
+        <button class="action-btn primary" onclick="goHome()" style="background: linear-gradient(135deg, var(--primary), var(--accent));">返回首页</button>
+        <button class="action-btn outline" onclick="switchTab('records')">查看打卡记录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 记录页 ===== -->
+  <div class="page" id="page-records">
+    <div class="top-bar">
+      <h1>📝 打卡记录</h1>
+    </div>
+
+    <div class="records-banner">
+      <div class="records-title">📊 我的打卡统计</div>
+      <div class="records-grid">
+        <div class="records-stat">
+          <div class="rs-num" id="totalDays">0</div>
+          <div class="rs-label">打卡天数</div>
+        </div>
+        <div class="records-stat">
+          <div class="rs-num" id="totalRecords">0</div>
+          <div class="rs-label">打卡次数</div>
+        </div>
+        <div class="records-stat">
+          <div class="rs-num" id="totalMinutes">0</div>
+          <div class="rs-label">运动(分钟)</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="recordsContent"></div>
+
+    <!-- 底部导航 -->
+    <div class="tab-bar" id="tabBar2">
+      <div class="tab-item" onclick="switchTab('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>运动</span>
+      </div>
+      <div class="tab-item active" onclick="switchTab('records')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>打卡</span>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+// ===== 数据 =====
+const exercises = [
+  { id:1, name:'足底筋膜松解', desc:'用网球或筋膜球踩在足底滚动，缓解足底紧张', icon:'🦶', duration:120, color:'#FF6B6B', gradient:['#FF6B6B','#FF8E8E'], category:'下肢', tips:'将球放在足弓处，缓慢前后滚动，遇到痛点停留15秒' },
+  { id:2, name:'小腿筋膜松解', desc:'使用泡沫轴滚动小腿，放松腓肠肌和比目鱼肌', icon:'🦵', duration:180, color:'#4ECDC4', gradient:['#4ECDC4','#6EE7DE'], category:'下肢', tips:'坐在地上，将小腿放在泡沫轴上，缓慢前后滚动' },
+  { id:3, name:'大腿前侧松解', desc:'泡沫轴滚动股四头肌，释放大腿前侧紧张', icon:'<svg viewBox="0 0 72 72" fill="none" width="32" height="32"><path d="M26 12C22 18 20 30 21 42C22 52 26 60 30 64" stroke="#45B7D1" stroke-width="2.5" stroke-linecap="round" opacity=".3"/><path d="M31 10C28 18 27 30 28 42C29 52 32 60 35 64" stroke="#45B7D1" stroke-width="2.5" stroke-linecap="round" opacity=".5"/><path d="M36 10C34 18 34 30 34 42C34 52 35 60 36 64" stroke="#45B7D1" stroke-width="2.5" stroke-linecap="round"/><path d="M41 10C42 18 41 30 40 42C39 52 38 60 37 64" stroke="#45B7D1" stroke-width="2.5" stroke-linecap="round" opacity=".5"/><path d="M46 12C48 18 48 30 47 42C46 52 44 60 42 64" stroke="#45B7D1" stroke-width="2.5" stroke-linecap="round" opacity=".3"/></svg>', duration:180, color:'#45B7D1', gradient:['#45B7D1','#65D7F1'], category:'下肢', tips:'俯卧姿势，泡沫轴放在大腿前侧，从髋部向膝盖方向滚动' },
+  { id:4, name:'大腿外侧松解', desc:'松解IT band，缓解膝盖外侧不适', icon:'🏃', duration:150, color:'#96CEB4', gradient:['#96CEB4','#B6EED4'], category:'下肢', tips:'侧卧姿势，泡沫轴放在大腿外侧，缓慢从髋部滚到膝盖' },
+  { id:5, name:'肩颈筋膜松解', desc:'使用筋膜球或手指按压肩颈部位，缓解肩颈僵硬', icon:'🧘', duration:120, color:'#DDA0DD', gradient:['#DDA0DD','#F0C0F0'], category:'上肢', tips:'用筋膜球靠墙按压肩颈酸痛点，每个点保持20-30秒' },
+  { id:6, name:'背部筋膜松解', desc:'泡沫轴滚动背部，放松竖脊肌和背阔肌', icon:'🧎', duration:180, color:'#F7DC6F', gradient:['#F7DC6F','#FFF0A0'], category:'躯干', tips:'仰卧，泡沫轴放在背部，双手抱头，缓慢上下滚动' },
+  { id:7, name:'臀部筋膜松解', desc:'使用泡沫轴或筋膜球松解臀大肌和梨状肌', icon:'🍑', duration:150, color:'#E8A87C', gradient:['#E8A87C','#FFCBA4'], category:'躯干', tips:'坐在泡沫轴上，将体重压在一侧臀部，缓慢滚动找痛点' },
+  { id:8, name:'胸椎灵活度训练', desc:'通过泡沫轴伸展打开胸椎，改善圆肩驼背', icon:'🏋️', duration:120, color:'#82E0AA', gradient:['#82E0AA','#A8F0CA'], category:'躯干', tips:'仰卧在泡沫轴上，双手抱头，做胸椎伸展动作' }
+];
+
+const praises = [
+  '太棒了！🎉 你又完成了一次筋膜松解，身体会感谢你的！',
+  '优秀！✨ 坚持就是胜利，你的身体正在变得更好！',
+  '真厉害！💪 每一次松解都是对自己最好的投资！',
+  '完美完成！🌟 你的自律让人佩服，继续保持！',
+  '好样的！👏 筋膜松解做得很到位，身体会越来越灵活！',
+  '了不起！🥇 你已经超越了昨天的自己！',
+  '太赞了！🌈 感觉到身体的轻松了吗？这就是坚持的力量！',
+  '满分表现！💯 你的坚持终将收获满满！',
+  '超级棒！🔥 你是自己的健康守护者！',
+  '完美！🎯 每一天的打卡都是通往健康的一步！'
+];
+
+// ===== 状态 =====
+let currentExercise = null;
+let timeLeft = 0;
+let totalDuration = 0;
+let isRunning = false;
+let timerInterval = null;
+let activeCategory = '全部';
+
+// ===== 工具函数 =====
+function getToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatTime(s) {
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('fascia_records') || '[]'); }
+  catch { return []; }
+}
+
+function saveRecords(records) {
+  localStorage.setItem('fascia_records', JSON.stringify(records));
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 6) return '夜深了 🌜';
+  if (h < 12) return '早上好 ☀️';
+  if (h < 14) return '中午好 🌤️';
+  if (h < 18) return '下午好 🌅';
+  return '晚上好 🌙';
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const weeks = ['日','一','二','三','四','五','六'];
+  return `${d.getMonth()+1}月${d.getDate()}日 周${weeks[d.getDay()]}`;
+}
+
+function getStreakDays(records) {
+  if (!records.length) return 0;
+  const dates = [...new Set(records.map(r => r.date))].sort().reverse();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0, check = new Date(today);
+  for (const ds of dates) {
+    const rd = new Date(ds); rd.setHours(0,0,0,0);
+    const diff = Math.round((check - rd) / 86400000);
+    if (diff === 0 || diff === 1) { streak++; check = new Date(rd); }
+    else break;
+  }
+  return streak;
+}
+
+// ===== 页面切换 =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchTab(tab) {
+  showPage(tab);
+  // 更新所有 tab-bar 的高亮状态
+  document.querySelectorAll('.tab-bar').forEach(bar => {
+    const items = bar.querySelectorAll('.tab-item');
+    items.forEach((t, i) => {
+      t.classList.toggle('active', (tab === 'home' && i === 0) || (tab === 'records' && i === 1));
+    });
+  });
+  if (tab === 'home') renderHome();
+  if (tab === 'records') renderRecords();
+}
+
+function goHome() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  isRunning = false;
+  switchTab('home');
+}
+
+// ===== 首页渲染 =====
+function renderHome() {
+  document.getElementById('greeting').textContent = getGreeting();
+  
+  const records = getRecords();
+  const today = getToday();
+  const todayRecords = records.filter(r => r.date === today);
+  const todayIds = [...new Set(todayRecords.map(r => r.exerciseId))];
+  const todayCount = todayIds.length;
+  const totalCount = [...new Set(records.map(r => r.date + '_' + r.exerciseId))].length;
+  const streak = getStreakDays(records);
+  const pct = Math.round((todayCount / exercises.length) * 100);
+
+  document.getElementById('streakDays').textContent = streak;
+  document.getElementById('todayCount').textContent = todayCount;
+  document.getElementById('totalCount').textContent = totalCount;
+  document.getElementById('progressText').textContent = `${todayCount}/${exercises.length}`;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressMsg').textContent = todayCount === exercises.length ? '🎉 太棒了，今天全部完成啦！' : '';
+
+  // 分类标签
+  const categories = ['全部', '下肢', '上肢', '躯干'];
+  document.getElementById('categoryBar').innerHTML = categories.map(c =>
+    `<div class="cat-tag ${activeCategory === c ? 'active' : ''}" onclick="setCategory('${c}')">${c}</div>`
+  ).join('');
+
+  // 运动列表
+  const filtered = activeCategory === '全部' ? exercises : exercises.filter(e => e.category === activeCategory);
+  document.getElementById('exerciseList').innerHTML = filtered.map(e => {
+    const done = todayIds.includes(e.id);
+    return `
+      <div class="exercise-card" style="--card-color: ${e.color}" onclick="startExercise(${e.id})">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:${e.color};border-radius:4px 0 0 4px;"></div>
+        <div class="card-body">
+          <div class="card-icon" style="background: ${e.color}15;">${e.icon}</div>
+          <div class="card-info">
+            <div class="card-name">${e.name}</div>
+            <div class="card-desc">${e.desc}</div>
+            <div class="card-tags">
+              <span class="card-tag" style="background:${e.color}15;color:${e.color};">${e.duration}秒</span>
+              <span class="card-tag" style="background:#EEF2FF;color:#4A6CF7;">${e.category}</span>
+            </div>
+          </div>
+          <div class="card-action">
+            <button class="start-btn ${done ? 'done' : ''}" style="${done ? '' : 'background:linear-gradient(135deg,'+e.gradient[0]+','+e.gradient[1]+');box-shadow:0 4px 12px '+e.color+'40;'}">
+              ${done ? '✓' : '开始'}
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  renderHome();
+}
+
+// ===== 动作演示 SVG 动画 =====
+function getExerciseDemoSVG(id, color) {
+  const c = color || '#4A6CF7';
+  const c2 = c + '40';
+  const demos = {
+    1: `<svg viewBox="0 0 200 140">
+      <!-- 地面 -->
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 椅子 -->
+      <rect x="30" y="70" width="40" height="4" rx="2" fill="${c}" opacity="0.15"/>
+      <line x1="34" y1="74" x2="34" y2="120" stroke="${c}" stroke-width="2" opacity="0.15"/>
+      <line x1="66" y1="74" x2="66" y2="120" stroke="${c}" stroke-width="2" opacity="0.15"/>
+      <!-- 球 -->
+      <g class="anim-roll">
+        <circle cx="90" cy="116" r="8" fill="${c2}" stroke="${c}" class="stick-tool"/>
+        <text x="90" y="119" text-anchor="middle" font-size="8" fill="${c}">●</text>
+      </g>
+      <!-- 人（坐姿） -->
+      <g>
+        <!-- 头 -->
+        <circle cx="50" cy="48" r="10" class="stick-head" stroke="${c}"/>
+        <!-- 身体 -->
+        <line x1="50" y1="58" x2="50" y2="85" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（扶椅） -->
+        <line x1="50" y1="65" x2="34" y2="72" class="stick-limb" stroke="${c}"/>
+        <line x1="50" y1="65" x2="66" y2="72" class="stick-limb" stroke="${c}"/>
+        <!-- 大腿（坐） -->
+        <line x1="50" y1="85" x2="70" y2="88" class="stick-limb" stroke="${c}"/>
+        <!-- 小腿 -->
+        <g class="anim-foot-roll" style="transform-origin: 70px 88px;">
+          <line x1="70" y1="88" x2="88" y2="108" class="stick-limb" stroke="${c}"/>
+          <!-- 脚 -->
+          <line x1="88" y1="108" x2="95" y2="116" class="stick-limb" stroke="${c}"/>
+        </g>
+        <!-- 另一条腿 -->
+        <line x1="50" y1="85" x2="40" y2="100" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="40" y1="100" x2="38" y2="118" class="stick-limb" stroke="${c}" opacity="0.4"/>
+      </g>
+      <!-- 箭头指示滚动方向 -->
+      <g opacity="0.4">
+        <path d="M78 130 L88 130 L83 126" fill="none" stroke="${c}" stroke-width="1.5"/>
+        <path d="M98 130 L88 130 L93 126" fill="none" stroke="${c}" stroke-width="1.5"/>
+      </g>
+    </svg>`,
+
+    2: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <g class="anim-roll-reverse">
+        <rect x="80" y="106" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+        <line x1="90" y1="109" x2="90" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="105" y1="109" x2="105" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="120" y1="109" x2="120" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      </g>
+      <!-- 人（坐姿撑地） -->
+      <g class="anim-roll">
+        <!-- 头 -->
+        <circle cx="55" cy="35" r="10" class="stick-head" stroke="${c}"/>
+        <!-- 身体（后倾） -->
+        <line x1="55" y1="45" x2="60" y2="75" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（撑地） -->
+        <line x1="58" y1="55" x2="40" y2="75" class="stick-limb" stroke="${c}"/>
+        <line x1="40" y1="75" x2="38" y2="95" class="stick-limb" stroke="${c}"/>
+        <line x1="58" y1="55" x2="75" y2="75" class="stick-limb" stroke="${c}"/>
+        <line x1="75" y1="75" x2="78" y2="95" class="stick-limb" stroke="${c}"/>
+        <!-- 大腿 -->
+        <line x1="60" y1="75" x2="95" y2="80" class="stick-limb" stroke="${c}"/>
+        <!-- 小腿（在泡沫轴上） -->
+        <line x1="95" y1="80" x2="130" y2="100" class="stick-limb" stroke="${c}"/>
+        <!-- 另一条腿（辅助） -->
+        <line x1="60" y1="75" x2="50" y2="100" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="50" y1="100" x2="55" y2="118" class="stick-limb" stroke="${c}" opacity="0.4"/>
+      </g>
+    </svg>`,
+
+    3: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <g class="anim-roll-reverse">
+        <rect x="75" y="106" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+        <line x1="87" y1="109" x2="87" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="100" y1="109" x2="100" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="113" y1="109" x2="113" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      </g>
+      <!-- 人（俯卧撑地） -->
+      <g class="anim-roll">
+        <!-- 头 -->
+        <circle cx="45" cy="82" r="9" class="stick-head" stroke="${c}"/>
+        <!-- 身体（俯卧） -->
+        <line x1="53" y1="85" x2="110" y2="90" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（撑地） -->
+        <line x1="60" y1="86" x2="55" y2="100" class="stick-limb" stroke="${c}"/>
+        <line x1="55" y1="100" x2="52" y2="115" class="stick-limb" stroke="${c}"/>
+        <line x1="85" y1="88" x2="80" y2="100" class="stick-limb" stroke="${c}"/>
+        <line x1="80" y1="100" x2="78" y2="115" class="stick-limb" stroke="${c}"/>
+        <!-- 大腿 -->
+        <line x1="110" y1="90" x2="140" y2="95" class="stick-limb" stroke="${c}"/>
+        <!-- 小腿 -->
+        <line x1="140" y1="95" x2="160" y2="115" class="stick-limb" stroke="${c}"/>
+        <!-- 另一条腿 -->
+        <line x1="110" y1="90" x2="145" y2="105" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="145" y1="105" x2="155" y2="118" class="stick-limb" stroke="${c}" opacity="0.4"/>
+      </g>
+    </svg>`,
+
+    4: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <g class="anim-roll-reverse">
+        <rect x="70" y="106" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+        <line x1="82" y1="109" x2="82" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="95" y1="109" x2="95" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="108" y1="109" x2="108" y2="117" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      </g>
+      <!-- 人（侧卧） -->
+      <g class="anim-roll">
+        <!-- 头 -->
+        <circle cx="50" cy="55" r="9" class="stick-head" stroke="${c}"/>
+        <!-- 身体（侧卧弧线） -->
+        <path d="M55 62 Q65 80 100 90" fill="none" class="stick-body" stroke="${c}"/>
+        <!-- 下手臂（撑地） -->
+        <line x1="58" y1="68" x2="45" y2="90" class="stick-limb" stroke="${c}"/>
+        <line x1="45" y1="90" x2="42" y2="115" class="stick-limb" stroke="${c}"/>
+        <!-- 上手臂 -->
+        <line x1="60" y1="68" x2="50" y2="85" class="stick-limb" stroke="${c}" opacity="0.5"/>
+        <!-- 下腿（伸直在泡沫轴上） -->
+        <line x1="100" y1="90" x2="135" y2="95" class="stick-limb" stroke="${c}"/>
+        <line x1="135" y1="95" x2="155" y2="110" class="stick-limb" stroke="${c}"/>
+        <!-- 上腿（屈膝踩地） -->
+        <line x1="100" y1="90" x2="115" y2="105" class="stick-limb" stroke="${c}" opacity="0.5"/>
+        <line x1="115" y1="105" x2="108" y2="118" class="stick-limb" stroke="${c}" opacity="0.5"/>
+      </g>
+    </svg>`,
+
+    5: `<svg viewBox="0 0 200 140">
+      <!-- 墙壁 -->
+      <rect x="140" y="20" width="50" height="120" rx="4" fill="${c}" opacity="0.06"/>
+      <line x1="140" y1="20" x2="140" y2="140" stroke="${c}" stroke-width="1.5" opacity="0.15"/>
+      <!-- 球（在墙与肩颈之间） -->
+      <g class="anim-squat">
+        <circle cx="128" cy="52" r="8" fill="${c2}" stroke="${c}" class="stick-tool"/>
+      </g>
+      <!-- 人（站立靠墙） -->
+      <g class="anim-squat">
+        <!-- 头 -->
+        <circle cx="80" cy="30" r="10" class="stick-head" stroke="${c}"/>
+        <!-- 身体 -->
+        <line x1="80" y1="40" x2="85" y2="80" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（搭在对侧肩上） -->
+        <line x1="82" y1="50" x2="110" y2="48" class="stick-limb" stroke="${c}"/>
+        <line x1="110" y1="48" x2="125" y2="52" class="stick-limb" stroke="${c}"/>
+        <line x1="82" y1="52" x2="95" y2="55" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <!-- 腿 -->
+        <line x1="85" y1="80" x2="75" y2="110" class="stick-limb" stroke="${c}"/>
+        <line x1="75" y1="110" x2="72" y2="130" class="stick-limb" stroke="${c}"/>
+        <line x1="85" y1="80" x2="100" y2="110" class="stick-limb" stroke="${c}"/>
+        <line x1="100" y1="110" x2="105" y2="130" class="stick-limb" stroke="${c}"/>
+      </g>
+      <!-- 箭头 -->
+      <g opacity="0.4">
+        <path d="M130 38 L130 28 L126 33" fill="none" stroke="${c}" stroke-width="1.5"/>
+        <path d="M130 66 L130 76 L126 71" fill="none" stroke="${c}" stroke-width="1.5"/>
+      </g>
+    </svg>`,
+
+    6: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <g class="anim-roll-reverse">
+        <rect x="70" y="80" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+        <line x1="82" y1="83" x2="82" y2="91" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="95" y1="83" x2="95" y2="91" stroke="${c}" stroke-width="1" opacity="0.3"/>
+        <line x1="108" y1="83" x2="108" y2="91" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      </g>
+      <!-- 人（仰卧在泡沫轴上） -->
+      <g class="anim-roll">
+        <!-- 头 -->
+        <circle cx="55" cy="62" r="9" class="stick-head" stroke="${c}"/>
+        <!-- 身体（仰卧弧线） -->
+        <path d="M62 68 Q80 78 110 75" fill="none" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（抱头） -->
+        <line x1="60" y1="66" x2="52" y2="56" class="stick-limb" stroke="${c}"/>
+        <line x1="52" y1="56" x2="58" y2="50" class="stick-limb" stroke="${c}"/>
+        <line x1="60" y1="66" x2="48" y2="60" class="stick-limb" stroke="${c}" opacity="0.5"/>
+        <!-- 腿 -->
+        <line x1="110" y1="75" x2="135" y2="90" class="stick-limb" stroke="${c}"/>
+        <line x1="135" y1="90" x2="140" y2="115" class="stick-limb" stroke="${c}"/>
+        <line x1="110" y1="75" x2="145" y2="95" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="145" y1="95" x2="150" y2="118" class="stick-limb" stroke="${c}" opacity="0.4"/>
+      </g>
+    </svg>`,
+
+    7: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <rect x="60" y="100" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+      <line x1="72" y1="103" x2="72" y2="111" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <line x1="85" y1="103" x2="85" y2="111" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <line x1="98" y1="103" x2="98" y2="111" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <!-- 人（坐在泡沫轴上，4字腿） -->
+      <g class="anim-lean" style="transform-origin: 85px 100px;">
+        <!-- 头 -->
+        <circle cx="85" cy="35" r="10" class="stick-head" stroke="${c}"/>
+        <!-- 身体 -->
+        <line x1="85" y1="45" x2="85" y2="80" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（撑地） -->
+        <line x1="85" y1="55" x2="65" y2="75" class="stick-limb" stroke="${c}"/>
+        <line x1="65" y1="75" x2="60" y2="100" class="stick-limb" stroke="${c}"/>
+        <line x1="85" y1="55" x2="105" y2="75" class="stick-limb" stroke="${c}"/>
+        <line x1="105" y1="75" x2="110" y2="100" class="stick-limb" stroke="${c}"/>
+        <!-- 支撑腿 -->
+        <line x1="85" y1="80" x2="75" y2="100" class="stick-limb" stroke="${c}"/>
+        <line x1="75" y1="100" x2="70" y2="118" class="stick-limb" stroke="${c}"/>
+        <!-- 4字腿（搭在对侧膝盖上） -->
+        <line x1="85" y1="80" x2="110" y2="95" class="stick-limb" stroke="${c}"/>
+        <line x1="110" y1="95" x2="100" y2="108" class="stick-limb" stroke="${c}"/>
+      </g>
+    </svg>`,
+
+    8: `<svg viewBox="0 0 200 140">
+      <line x1="20" y1="120" x2="180" y2="120" class="stick-ground" stroke="${c}"/>
+      <!-- 泡沫轴 -->
+      <rect x="65" y="82" width="50" height="14" rx="7" fill="${c2}" stroke="${c}" class="stick-tool"/>
+      <line x1="77" y1="85" x2="77" y2="93" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <line x1="90" y1="85" x2="90" y2="93" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <line x1="103" y1="85" x2="103" y2="93" stroke="${c}" stroke-width="1" opacity="0.3"/>
+      <!-- 人（仰卧在泡沫轴上，胸椎伸展 - 动态后仰） -->
+      <g class="anim-extend" style="transform-origin: 90px 78px;">
+        <!-- 头 -->
+        <circle cx="42" cy="52" r="9" class="stick-head" stroke="${c}"/>
+        <!-- 身体（背部在轴上，上半身向后仰） -->
+        <path d="M50 58 Q60 68 90 78 Q110 82 125 78" fill="none" class="stick-body" stroke="${c}"/>
+        <!-- 手臂（抱头后伸，肘部打开） -->
+        <line x1="48" y1="56" x2="38" y2="42" class="stick-limb" stroke="${c}"/>
+        <line x1="38" y1="42" x2="46" y2="36" class="stick-limb" stroke="${c}"/>
+        <line x1="50" y1="58" x2="34" y2="48" class="stick-limb" stroke="${c}" opacity="0.5"/>
+        <!-- 腿（屈膝踩地稳定） -->
+        <line x1="125" y1="78" x2="140" y2="90" class="stick-limb" stroke="${c}"/>
+        <line x1="140" y1="90" x2="135" y2="108" class="stick-limb" stroke="${c}"/>
+        <line x1="135" y1="108" x2="140" y2="118" class="stick-limb" stroke="${c}"/>
+        <line x1="125" y1="78" x2="148" y2="92" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="148" y1="92" x2="145" y2="110" class="stick-limb" stroke="${c}" opacity="0.4"/>
+        <line x1="145" y1="110" x2="150" y2="118" class="stick-limb" stroke="${c}" opacity="0.4"/>
+      </g>
+      <!-- 伸展弧线箭头 -->
+      <g opacity="0.5">
+        <path d="M30 55 Q25 40 35 30" fill="none" stroke="${c}" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <path d="M33 32 L35 30 L38 33" fill="none" stroke="${c}" stroke-width="1.5"/>
+      </g>
+    </svg>`
+  };
+  return demos[id] || '';
+}
+
+function renderExerciseDemo(id, color) {
+  const wrap = document.getElementById('demoSvgWrap');
+  const container = document.getElementById('demoContainer');
+  if (!wrap || !container) return;
+  const svg = getExerciseDemoSVG(id, color);
+  wrap.innerHTML = svg;
+  container.style.setProperty('--demo-color', color);
+  container.querySelector('.demo-container, .demo-title')?.style;
+}
+
+// ===== 倒计时声音（电子表滴滴声） =====
+let audioCtx = null;
+function playBeep(freq, duration, volume) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq || 1200;
+    osc.type = 'square';
+    gain.gain.value = volume || 0.08;
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.08));
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + (duration || 0.08));
+  } catch(e) {}
+}
+
+function playTickSound() {
+  playBeep(1200, 0.06, 0.05);
+}
+
+function playCompleteSound() {
+  playBeep(880, 0.15, 0.1);
+  setTimeout(() => playBeep(1100, 0.15, 0.1), 180);
+  setTimeout(() => playBeep(1320, 0.3, 0.12), 360);
+}
+
+// ===== 计时器 =====
+function startExercise(id) {
+  currentExercise = exercises.find(e => e.id === id);
+  if (!currentExercise) return;
+
+  totalDuration = currentExercise.duration;
+  timeLeft = totalDuration;
+  isRunning = false;
+
+  document.getElementById('timerIcon').innerHTML = currentExercise.icon;
+  document.getElementById('timerName').textContent = currentExercise.name;
+  document.getElementById('timerTips').textContent = '💡 ' + currentExercise.tips;
+  document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
+  document.getElementById('timerStatus').textContent = '准备开始';
+  document.getElementById('mainBtn').textContent = '开始';
+  document.getElementById('mainBtn').style.background = `linear-gradient(135deg, ${currentExercise.gradient[0]}, ${currentExercise.gradient[1]})`;
+  document.getElementById('circleProgress').style.stroke = currentExercise.gradient[0];
+  document.getElementById('circleProgress').style.strokeDashoffset = '553';
+
+  // 渲染动作演示动画
+  renderExerciseDemo(id, currentExercise.color);
+
+  showPage('timer');
+}
+
+function toggleTimer() {
+  if (isRunning) pauseTimer();
+  else startTimer();
+}
+
+function startTimer() {
+  isRunning = true;
+  document.getElementById('timerStatus').textContent = '运动中...';
+  document.getElementById('mainBtn').textContent = '暂停';
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      completeExercise();
+      return;
+    }
+    updateTimerUI();
+  }, 1000);
+}
+
+function pauseTimer() {
+  isRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timerStatus').textContent = '已暂停';
+  document.getElementById('mainBtn').textContent = '继续';
+}
+
+function resetTimer() {
+  isRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timeLeft = totalDuration;
+  updateTimerUI();
+  document.getElementById('timerStatus').textContent = '准备开始';
+  document.getElementById('mainBtn').textContent = '开始';
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  completeExercise();
+}
+
+function updateTimerUI() {
+  document.getElementById('timerDisplay').textContent = formatTime(timeLeft);
+  const progress = (totalDuration - timeLeft) / totalDuration;
+  const offset = 553 - (553 * progress);
+  document.getElementById('circleProgress').style.strokeDashoffset = offset;
+  // 每秒播放滴滴声
+  if (isRunning && timeLeft > 0) {
+    playTickSound();
+  }
+}
+
+function completeExercise() {
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const praise = praises[Math.floor(Math.random() * praises.length)];
+
+  // 保存记录
+  const records = getRecords();
+  records.unshift({
+    exerciseId: currentExercise.id,
+    exerciseName: currentExercise.name,
+    exerciseIcon: currentExercise.icon,
+    exerciseColor: currentExercise.color,
+    date: getToday(),
+    time: timeStr,
+    duration: totalDuration,
+    liked: false
+  });
+  saveRecords(records);
+
+  // 振动反馈
+  if (navigator.vibrate) navigator.vibrate(100);
+
+  // 播放完成提示音
+  playCompleteSound();
+
+  // 显示完成页
+  document.getElementById('completeExercise').textContent = currentExercise.name;
+  document.getElementById('praiseText').textContent = praise;
+  document.getElementById('csDuration').textContent = totalDuration + '秒';
+  document.getElementById('csTime').textContent = timeStr;
+
+  showPage('complete');
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#DDA0DD','#F7DC6F','#FF8E8E','#82E0AA'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 0.8 + 's';
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.innerHTML = '', 4000);
+}
+
+// ===== 记录页 =====
+function renderRecords() {
+  const records = getRecords();
+
+  // 统计
+  const uniqueDays = [...new Set(records.map(r => r.date))];
+  const totalSec = records.reduce((s, r) => s + r.duration, 0);
+  document.getElementById('totalDays').textContent = uniqueDays.length;
+  document.getElementById('totalRecords').textContent = records.length;
+  document.getElementById('totalMinutes').textContent = Math.round(totalSec / 60);
+
+  const container = document.getElementById('recordsContent');
+
+  if (!records.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <div class="empty-text">还没有打卡记录哦</div>
+        <div class="empty-sub">快去运动吧，完成第一次打卡！</div>
+        <button class="empty-btn" onclick="switchTab('home')">开始运动</button>
+      </div>`;
+    return;
+  }
+
+  // 按日期分组
+  const grouped = {};
+  records.forEach(r => {
+    if (!grouped[r.date]) grouped[r.date] = { date: r.date, label: formatDate(r.date), records: [] };
+    grouped[r.date].records.push(r);
+  });
+
+  const sorted = Object.values(grouped).sort((a, b) => b.date.localeCompare(a.date));
+
+  container.innerHTML = sorted.map(group => `
+    <div class="date-group">
+      <div class="date-header">
+        <span class="date-text">${group.label}</span>
+        <span class="date-count">${group.records.length} 项</span>
+      </div>
+      ${group.records.map((r, i) => `
+        <div class="record-card">
+          <div class="record-left">
+            <div class="record-icon" style="background:${r.exerciseColor || '#4A6CF7'}15;">${r.exerciseIcon}</div>
+            <div>
+              <div class="record-name">${r.exerciseName}</div>
+              <div class="record-meta">${r.time} · ${r.duration}秒</div>
+            </div>
+          </div>
+          <button class="like-btn ${r.liked ? 'liked' : ''}" onclick="toggleLike('${r.date}', ${i})">
+            <span class="like-icon">${r.liked ? '❤️' : '🤍'}</span>
+            <span class="like-text">${r.liked ? '已赞' : '点赞'}</span>
+          </button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleLike(date, index) {
+  const records = getRecords();
+  let count = 0;
+  for (let i = 0; i < records.length; i++) {
+    if (records[i].date === date) {
+      if (count === index) {
+        records[i].liked = !records[i].liked;
+        if (records[i].liked && navigator.vibrate) navigator.vibrate(30);
+        break;
+      }
+      count++;
+    }
+  }
+  saveRecords(records);
+  renderRecords();
+}
+
+// ===== 初始化 =====
+renderHome();
+</script>
+</body>
+</html>
